@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  telegram-agy-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: telegram-agy-bot
+    restart: unless-stopped
+    # host network mode allows container to reach host's SSH on 127.0.0.1 directly on Linux
+    network_mode: "host"
+    env_file:
+      - .env
+    volumes:
+      # If using SSH Private Key auth, mount your private key (read-only):
+      # e.g., ~/.ssh/id_rsa:/app/keys/id_rsa:ro
+      - ${SSH_LOCAL_KEY_PATH:-~/.ssh/id_rsa}:/app/keys/id_rsa:ro
+    environment:
+      - TZ=Asia/Tehran
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
