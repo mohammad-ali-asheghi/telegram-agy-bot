@@ -61,6 +61,19 @@ public class SshService {
         }
         session.setConfig("StrictHostKeyChecking", "no");
         session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
+
+        // Broad algorithm support: covers RSA, Ed25519, ECDSA and modern SHA2 variants
+        session.setConfig("server_host_key",
+                "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521," +
+                        "rsa-sha2-512,rsa-sha2-256,ssh-rsa");
+        session.setConfig("PubkeyAcceptedAlgorithms",
+                "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521," +
+                        "rsa-sha2-512,rsa-sha2-256,ssh-rsa");
+        session.setConfig("kex",
+                "curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256," +
+                        "ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group16-sha512," +
+                        "diffie-hellman-group18-sha512,diffie-hellman-group14-sha256");
+
         session.setTimeout(15000); // 15s connection timeout
         return session;
     }
