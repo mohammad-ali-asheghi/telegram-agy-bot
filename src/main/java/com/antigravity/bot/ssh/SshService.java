@@ -2,6 +2,7 @@ package com.antigravity.bot.ssh;
 
 import com.antigravity.bot.config.BotConfig;
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelShell;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -54,7 +55,7 @@ public class SshService {
         }
     }
 
-    private Session createSession() throws JSchException {
+    public Session createSession() throws JSchException {
         Session session = jsch.getSession(config.getSshUser(), config.getSshHost(), config.getSshPort());
         if (config.getSshPassword() != null && !config.getSshPassword().isBlank()) {
             session.setPassword(config.getSshPassword());
@@ -76,6 +77,18 @@ public class SshService {
 
         session.setTimeout(15000); // 15s connection timeout
         return session;
+    }
+
+    public Session createConnectedSession() throws JSchException {
+        Session session = createSession();
+        session.connect(15000);
+        return session;
+    }
+
+    public ChannelShell openShell(Session session) throws JSchException {
+        ChannelShell channel = (ChannelShell) session.openChannel("shell");
+        channel.setPtyType("xterm-256color", 100, 30, 800, 600);
+        return channel;
     }
 
     public boolean testConnection() {

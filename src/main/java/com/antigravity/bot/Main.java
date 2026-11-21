@@ -38,7 +38,7 @@ public class Main {
             }
 
             AgyService agyService = new AgyService(config, sshService);
-            TelegramBotService botService = new TelegramBotService(config, agyService);
+            TelegramBotService botService = new TelegramBotService(config, agyService, sshService);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 log.info("Shutting down bot...");

@@ -71,13 +71,24 @@ public class TelegramApiClient {
         }
     }
 
-    public void sendMessage(long chatId, String text, Integer replyToMessageId) {
+    public TelegramModels.Message sendMessage(long chatId, String text, Integer replyToMessageId) {
+        return sendMessage(chatId, text, replyToMessageId, null, null);
+    }
+
+    public TelegramModels.Message sendMessage(long chatId, String text, Integer replyToMessageId,
+                                             TelegramModels.InlineKeyboardMarkup replyMarkup, String parseMode) {
         String url = baseUrl + "/sendMessage";
         JsonObject json = new JsonObject();
         json.addProperty("chat_id", chatId);
         json.addProperty("text", text);
         if (replyToMessageId != null) {
             json.addProperty("reply_to_message_id", replyToMessageId);
+        }
+        if (parseMode != null && !parseMode.isBlank()) {
+            json.addProperty("parse_mode", parseMode);
+        }
+        if (replyMarkup != null) {
+            json.add("reply_markup", gson.toJsonTree(replyMarkup));
         }
 
         try {
@@ -89,11 +100,75 @@ public class TelegramApiClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
+            if (response.statusCode() == 200) {
+                TelegramModels.SendMessageResponse res = gson.fromJson(response.body(), TelegramModels.SendMessageResponse.class);
+                return res != null ? res.result : null;
+            } else {
                 log.warn("sendMessage failed (status {}): {}", response.statusCode(), response.body());
             }
         } catch (Exception e) {
             log.error("Failed to send message: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean editMessageText(long chatId, int messageId, String text,
+                                  TelegramModels.InlineKeyboardMarkup replyMarkup, String parseMode) {
+        String url = baseUrl + "/editMessageText";
+        JsonObject json = new JsonObject();
+        json.addProperty("chat_id", chatId);
+        json.addProperty("message_id", messageId);
+        json.addProperty("text", text);
+        if (parseMode != null && !parseMode.isBlank()) {
+            json.addProperty("parse_mode", parseMode);
+        }
+        if (replyMarkup != null) {
+            json.add("reply_markup", gson.toJsonTree(replyMarkup));
+        }
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(15))
+                    .POST(HttpRequest.BodyPublishers.ofString(json.toString(), StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return true;
+            } else {
+                String body = response.body();
+                // Ignore "message is not modified" error from Telegram API
+                if (!body.contains("message is not modified")) {
+                    log.warn("editMessageText failed (status {}): {}", response.statusCode(), body);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to edit message: {}", e.getMessage());
+        }
+        return false;
+    }
+
+    public void answerCallbackQuery(String callbackQueryId, String text) {
+        String url = baseUrl + "/answerCallbackQuery";
+        JsonObject json = new JsonObject();
+        json.addProperty("callback_query_id", callbackQueryId);
+        if (text != null && !text.isBlank()) {
+            json.addProperty("text", text);
+        }
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(10))
+                    .POST(HttpRequest.BodyPublishers.ofString(json.toString(), StandardCharsets.UTF_8))
+                    .build();
+
+            httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+        } catch (Exception e) {
+            log.debug("Failed to answer callback query: {}", e.getMessage());
         }
     }
 

@@ -12,10 +12,18 @@ public class TelegramModels {
         public String description;
     }
 
+    public static class SendMessageResponse {
+        public boolean ok;
+        public Message result;
+        public String description;
+    }
+
     public static class Update {
         @SerializedName("update_id")
         public long updateId;
         public Message message;
+        @SerializedName("callback_query")
+        public CallbackQuery callbackQuery;
     }
 
     public static class Message {
@@ -25,6 +33,13 @@ public class TelegramModels {
         public Chat chat;
         public String text;
         public long date;
+    }
+
+    public static class CallbackQuery {
+        public String id;
+        public User from;
+        public Message message;
+        public String data;
     }
 
     public static class User {
@@ -43,5 +58,29 @@ public class TelegramModels {
         public String type;
         public String title;
         public String username;
+    }
+
+    public static class InlineKeyboardMarkup {
+        @SerializedName("inline_keyboard")
+        public List<List<InlineKeyboardButton>> inlineKeyboard;
+
+        public InlineKeyboardMarkup() {}
+
+        public InlineKeyboardMarkup(List<List<InlineKeyboardButton>> inlineKeyboard) {
+            this.inlineKeyboard = inlineKeyboard;
+        }
+    }
+
+    public static class InlineKeyboardButton {
+        public String text;
+        @SerializedName("callback_data")
+        public String callbackData;
+
+        public InlineKeyboardButton() {}
+
+        public InlineKeyboardButton(String text, String callbackData) {
+            this.text = text;
+            this.callbackData = callbackData;
+        }
     }
 }
