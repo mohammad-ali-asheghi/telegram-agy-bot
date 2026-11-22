@@ -71,12 +71,12 @@ public class TelegramApiClient {
         }
     }
 
-    public TelegramModels.Message sendMessage(long chatId, String text, Integer replyToMessageId) {
-        return sendMessage(chatId, text, replyToMessageId, null, null);
+    public void sendMessage(long chatId, String text, Integer replyToMessageId) {
+        sendMessage(chatId, text, replyToMessageId, null, null);
     }
 
     public TelegramModels.Message sendMessage(long chatId, String text, Integer replyToMessageId,
-                                             TelegramModels.InlineKeyboardMarkup replyMarkup, String parseMode) {
+                                              TelegramModels.InlineKeyboardMarkup replyMarkup, String parseMode) {
         String url = baseUrl + "/sendMessage";
         JsonObject json = new JsonObject();
         json.addProperty("chat_id", chatId);
@@ -113,7 +113,7 @@ public class TelegramApiClient {
     }
 
     public boolean editMessageText(long chatId, int messageId, String text,
-                                  TelegramModels.InlineKeyboardMarkup replyMarkup, String parseMode) {
+                                   TelegramModels.InlineKeyboardMarkup replyMarkup, String parseMode) {
         String url = baseUrl + "/editMessageText";
         JsonObject json = new JsonObject();
         json.addProperty("chat_id", chatId);

@@ -6,12 +6,12 @@ public class AnsiSanitizer {
 
     // Matches non-SGR ANSI escape sequences (cursor movements, erase line, OSC window titles, etc.)
     private static final Pattern NON_SGR_PATTERN = Pattern.compile(
-            "\\x1B\\[[0-9;?]*[A-LN-Za-ln-z~]|\\x1B\\][^\u0007\\x1B]*(\\u0007|\\x1B\\\\)|\\x1B[()][AB012]"
+            "\\x1B\\[[0-9;?]*[A-LN-Za-ln-z~]|\\x1B][^\u0007\\x1B]*(\\u0007|\\x1B\\\\)|\\x1B[()][AB012]"
     );
 
     // Matches all ANSI sequences including SGR colors
     private static final Pattern ALL_ANSI_PATTERN = Pattern.compile(
-            "\\x1B\\[[0-9;?]*[a-zA-Z~]|\\x1B\\][^\u0007\\x1B]*(\\u0007|\\x1B\\\\)|\\x1B[()][AB012]"
+            "\\x1B\\[[0-9;?]*[a-zA-Z~]|\\x1B][^\u0007\\x1B]*(\\u0007|\\x1B\\\\)|\\x1B[()][AB012]"
     );
 
     /**

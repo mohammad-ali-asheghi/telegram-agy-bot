@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class TelegramModels {
 
     public static class GetUpdatesResponse {
@@ -64,7 +65,8 @@ public class TelegramModels {
         @SerializedName("inline_keyboard")
         public List<List<InlineKeyboardButton>> inlineKeyboard;
 
-        public InlineKeyboardMarkup() {}
+        public InlineKeyboardMarkup() {
+        }
 
         public InlineKeyboardMarkup(List<List<InlineKeyboardButton>> inlineKeyboard) {
             this.inlineKeyboard = inlineKeyboard;
@@ -76,7 +78,8 @@ public class TelegramModels {
         @SerializedName("callback_data")
         public String callbackData;
 
-        public InlineKeyboardButton() {}
+        public InlineKeyboardButton() {
+        }
 
         public InlineKeyboardButton(String text, String callbackData) {
             this.text = text;

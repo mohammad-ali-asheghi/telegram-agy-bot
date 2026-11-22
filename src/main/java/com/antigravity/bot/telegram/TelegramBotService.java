@@ -13,11 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TelegramBotService {
@@ -38,7 +34,7 @@ public class TelegramBotService {
         this.config = config;
         this.apiClient = new TelegramApiClient(config.getBotToken());
         this.agyService = agyService;
-        this.terminalManager = new TerminalManager(config, sshService, this.apiClient);
+        this.terminalManager = new TerminalManager(sshService, this.apiClient);
         this.commandExecutor = Executors.newCachedThreadPool();
         this.heartbeatScheduler = Executors.newSingleThreadScheduledExecutor();
     }
@@ -77,6 +73,7 @@ public class TelegramBotService {
                     }
                 } else {
                     // Small backoff on error
+                    //noinspection BusyWait
                     Thread.sleep(2000);
                 }
             } catch (InterruptedException e) {
@@ -85,6 +82,7 @@ public class TelegramBotService {
             } catch (Exception e) {
                 log.error("Unexpected error in Telegram polling loop: {}", e.getMessage(), e);
                 try {
+                    //noinspection BusyWait
                     Thread.sleep(3000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
@@ -110,10 +108,10 @@ public class TelegramBotService {
             return;
         }
 
-        commandExecutor.submit(() -> processMessage(chatId, messageId, text, userId));
+        commandExecutor.submit(() -> processMessage(chatId, messageId, text));
     }
 
-    private void processMessage(long chatId, int messageId, String text, long userId) {
+    private void processMessage(long chatId, int messageId, String text) {
         try {
             // Check if chat is currently in interactive terminal mode
             if (terminalManager.isTerminalMode(chatId)) {
@@ -448,9 +446,8 @@ public class TelegramBotService {
                         "در حال اجرا توسط Antigravity در سرور...",
                 messageId);
 
-        ScheduledFuture<?> typingHeartbeat = heartbeatScheduler.scheduleAtFixedRate(() -> {
-            apiClient.sendChatAction(chatId, "typing");
-        }, 2, 4, TimeUnit.SECONDS);
+        ScheduledFuture<?> typingHeartbeat =
+                heartbeatScheduler.scheduleAtFixedRate(() -> apiClient.sendChatAction(chatId, "typing"), 2, 4, TimeUnit.SECONDS);
 
         try {
             SshService.ExecutionResult result = agyService.runPrompt(chatId, prompt, continueSession);

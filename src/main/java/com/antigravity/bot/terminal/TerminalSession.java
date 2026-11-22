@@ -203,10 +203,6 @@ public class TerminalSession {
         this.liveMessageId = messageId;
     }
 
-    public int getLiveMessageId() {
-        return liveMessageId;
-    }
-
     public synchronized void close() {
         if (closed.compareAndSet(false, true)) {
             active.set(false);
@@ -218,7 +214,8 @@ public class TerminalSession {
                     try {
                         toShell.write("exit\n".getBytes(StandardCharsets.UTF_8));
                         toShell.flush();
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                 }
                 if (channelShell != null && channelShell.isConnected()) {
                     channelShell.disconnect();

@@ -1,6 +1,5 @@
 package com.antigravity.bot.terminal;
 
-import com.antigravity.bot.config.BotConfig;
 import com.antigravity.bot.ssh.SshService;
 import com.antigravity.bot.telegram.TelegramApiClient;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ public class TerminalManager {
 
     private static final Logger log = LoggerFactory.getLogger(TerminalManager.class);
 
-    private final BotConfig config;
     private final SshService sshService;
     private final TelegramApiClient apiClient;
     private final ScheduledExecutorService scheduler;
@@ -24,8 +22,7 @@ public class TerminalManager {
     private final ConcurrentHashMap<Long, TerminalSession> sessions = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Boolean> terminalModeActive = new ConcurrentHashMap<>();
 
-    public TerminalManager(BotConfig config, SshService sshService, TelegramApiClient apiClient) {
-        this.config = config;
+    public TerminalManager(SshService sshService, TelegramApiClient apiClient) {
         this.sshService = sshService;
         this.apiClient = apiClient;
         this.scheduler = Executors.newScheduledThreadPool(2);
@@ -34,13 +31,13 @@ public class TerminalManager {
         this.scheduler.scheduleAtFixedRate(this::reapInactiveSessions, 5, 5, TimeUnit.MINUTES);
     }
 
-    public synchronized TerminalSession startSession(long chatId, int initialMessageId, String workDir) throws Exception {
+    public synchronized void startSession(long chatId, int initialMessageId, String workDir) throws Exception {
         TerminalSession existing = sessions.get(chatId);
         if (existing != null && existing.isActive()) {
             existing.setLiveMessageId(initialMessageId);
             terminalModeActive.put(chatId, true);
             existing.triggerImmediateUpdate();
-            return existing;
+            return;
         }
 
         if (existing != null) {
@@ -51,7 +48,6 @@ public class TerminalManager {
         newSession.start(initialMessageId, workDir);
         sessions.put(chatId, newSession);
         terminalModeActive.put(chatId, true);
-        return newSession;
     }
 
     public TerminalSession getSession(long chatId) {
@@ -90,7 +86,8 @@ public class TerminalManager {
                 try {
                     apiClient.sendMessage(chatId,
                             "⏰ نشست ترمینال تعاملی به دلیل عدم فعالیت (۳۰ دقیقه) به طور خودکار بسته شد.", null);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
     }
@@ -99,7 +96,8 @@ public class TerminalManager {
         for (TerminalSession session : sessions.values()) {
             try {
                 session.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         sessions.clear();
         terminalModeActive.clear();

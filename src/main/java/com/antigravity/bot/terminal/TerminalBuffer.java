@@ -60,11 +60,12 @@ public class TerminalBuffer {
             } else if (c == '\n') {
                 commitCurrentLine();
             } else if (c == '\b') {
-                if (currentLine.length() > 0) {
+                if (!currentLine.isEmpty()) {
                     currentLine.setLength(currentLine.length() - 1);
                 }
             } else if (c == '\007') {
                 // Bell - ignore
+                System.out.println();
             } else {
                 currentLine.append(c);
             }
@@ -89,7 +90,7 @@ public class TerminalBuffer {
         for (String line : screenLines) {
             sb.append(line).append("\n");
         }
-        if (currentLine.length() > 0) {
+        if (!currentLine.isEmpty()) {
             sb.append(currentLine);
         }
 
